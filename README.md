@@ -35,12 +35,6 @@ If no release is published yet, or you want a development version, [build it loc
 
 Right-click any column header in the item list (or use the column-selector chevron), and check **Citations** in the list. The column is hidden by default and, once enabled, can be resized, hidden, shown, and sorted like any of Zotero's built-in columns.
 
-### Upgrading from an earlier development build
-
-The add-on ID changed to `zocitally@ashwin-pothen`, so Zotero treats Zocitally as a separate add-on. Disable or uninstall the CiteSight or earlier development add-on before installing Zocitally to avoid duplicate columns or menu commands. Earlier builds preserve their cache when uninstalled.
-
-On first startup, Zocitally copies user-set API key, automatic-fetch, refresh-interval, and concurrency preferences from the CiteSight preference branch, falling back to the earlier legacy branch, if no Zocitally value already exists. It opens the existing citation database in place, so cached counts are retained without a schema or file-copy migration. Legacy preferences are left untouched to make rollback safe. Earlier column layout keys are not reused, so you may need to enable the new **Citations** column once.
-
 ## OpenAlex API key
 
 Singleton DOI lookups currently work without a key and are free according to the [OpenAlex authentication documentation](https://developers.openalex.org/api-reference/authentication). A free API key provides a larger daily allowance:
@@ -71,9 +65,7 @@ Attachments selected in the item list are resolved to their parent bibliographic
 | `∅` | The DOI was not found in OpenAlex |
 | `!` | The latest attempt failed and no prior valid count is available |
 
-Hover over a value for the DOI, OpenAlex work ID, successful update time, staleness, or concise status/error. If a refresh fails for the same DOI, a previously valid count remains visible and the tooltip records the failed refresh.
-
-Counts sort numerically. Internally the data provider uses a fixed-width numeric sort key while the custom cell renderer shows the unpadded integer, preserving the supported Zotero item-tree column contract.
+Hover over a value for the DOI, OpenAlex work ID, successful update time, staleness, or concise status/error. If a refresh fails for the same DOI, a previously valid count remains visible and the tooltip records the failed refresh. Counts sort numerically, not lexicographically.
 
 ### Citations Updated column
 
@@ -88,7 +80,7 @@ When a cached value is older than your configured **Refresh interval** (see [Set
 - **Automatically fetch visible uncached items:** off by default. When enabled, the implementation is intentionally conservative: one request at a time, at most 10 queued items, and a 20-item session budget.
 - **Clear Cached Citation Data:** confirms the exact local record count, removes only plugin data, and refreshes the column.
 
-Citation records are stored in `openalex-citation-count.sqlite` in the active Zotero data directory. This legacy-compatible filename is intentionally retained so existing cached counts remain available after the rename. The compound identity is Zotero library ID plus stable item key. The cache contains the normalized DOI, OpenAlex work ID, count/status, attempt and success timestamps, error code, and schema version. It is local to one computer and does not sync through Zotero.
+Citation records are stored in `openalex-citation-count.sqlite` in the active Zotero data directory, keyed by Zotero library ID plus item key. The cache contains the normalized DOI, OpenAlex work ID, count/status, attempt and success timestamps, error code, and schema version. It is local to one computer and does not sync through Zotero.
 
 Disabling, uninstalling, or upgrading the plugin does not silently delete this database. Use the settings button to remove cached data explicitly. If an item's DOI changes, its old count is invalidated until the new DOI is fetched.
 
@@ -106,7 +98,7 @@ Requests use bounded concurrency. HTTP 429 honors `Retry-After` when present and
 - Citation data is local-only and does not sync between Zotero installations.
 - Automatic refresh is conservative; manual update remains the primary workflow.
 - Citation coverage and update timing vary by source; see the note at the top of this README on OpenAlex vs. Google Scholar.
-- The automated suite cannot verify Zotero's rendered desktop UI. See the manual checklist below.
+- The automated test suite cannot verify Zotero's rendered desktop UI; behavior in the actual Zotero item list should be spot-checked manually before each release.
 
 ## Troubleshooting
 
@@ -115,7 +107,6 @@ Requests use bounded concurrency. HTTP 429 honors `Retry-After` when present and
 - **Empty-set symbol:** OpenAlex returned 404 for the normalized DOI.
 - **Authentication warning:** test the key in settings, correct it, or remove it to use anonymous singleton lookups.
 - **Offline or server error:** the last valid count is preserved; retry later.
-- **Column/menu duplication after development reload:** disable and re-enable once and inspect Zotero's debug output. The plugin explicitly unregisters each registered component on shutdown.
 
 Useful technical messages are prefixed `[Zocitally]` in Zotero debug output. API keys are redacted by plugin logging.
 
@@ -140,32 +131,11 @@ build/zocitally-0.2.0.xpi
 
 The archive contains only runtime JavaScript, manifest/default preferences, preference UI assets, and locale data. It excludes TypeScript, tests, source maps, dependencies, and secrets.
 
-For iterative development, run `pnpm run build:dev`, then create a text file named `zocitally@ashwin-pothen` in the disposable Zotero development profile's `extensions` directory. Put the absolute path to `build/runtime` in that file. Start Zotero with a separate profile and data directory; never point development builds at a normal library. Rebuild and disable/re-enable the add-on to reload.
+For iterative development, run `pnpm run build:dev`, then create a text file named `zocitally@ashwin-pothen` in the disposable Zotero development profile's `extensions` directory. Put the absolute path to `build/runtime` in that file. Start Zotero with a separate profile and data directory; never point development builds at a normal library. Rebuild and disable/re-enable the add-on to reload. If disabling and re-enabling produces duplicate columns or menu entries, check Zotero's debug output; the plugin explicitly unregisters each component on shutdown.
 
 The repository and package name is `zotero-zocitally`.
 
 The implementation follows Zotero's official [plugin development documentation](https://www.zotero.org/support/dev/client_coding/plugin_development), [Zotero 7+ development guidance](https://www.zotero.org/support/dev/zotero_7_for_developers), supported [Zotero 8 custom-menu API](https://www.zotero.org/support/dev/zotero_8_for_developers), and OpenAlex's [single-work DOI endpoint](https://developers.openalex.org/api-reference/works/get-a-single-work).
-
-## Manual Zotero 9 test checklist
-
-- [ ] Fresh installation from the production XPI in a disposable Zotero 9 profile
-- [ ] Preference pane appears, inputs persist, and API-key field is masked
-- [ ] API-key test succeeds with a valid key and fails clearly with a bad key
-- [ ] One selected DOI-bearing item retrieves and displays a count
-- [ ] Multiple selected items update with correct progress totals
-- [ ] Item without a DOI displays `—`
-- [ ] A known valid zero-citation work displays `0`, not blank
-- [ ] An unknown DOI displays `∅`
-- [ ] Clicking the progress notification cancels new work safely
-- [ ] Counts and statuses persist after Zotero restart
-- [ ] Disable and re-enable creates no duplicate column, menus, or observer behavior
-- [ ] Numeric sort order is `0, 2, 9, 10, 100` (not lexicographic)
-- [ ] Tooltips show count, successful update time, DOI, work ID, and status
-- [ ] Citations Updated column shows a relative age and sorts oldest-first
-- [ ] Citations and Citations Updated cells turn amber once older than the refresh interval
-- [ ] Clearing cache confirms the count, clears the column, and leaves items unchanged
-- [ ] Offline refresh preserves an existing valid count and reports one concise failure summary
-- [ ] DOI change immediately invalidates the old association
 
 ## Development credit
 
