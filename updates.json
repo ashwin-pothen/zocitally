@@ -1,0 +1,18 @@
+{
+  "addons": {
+    "zocitally@ashwin-pothen": {
+      "updates": [
+        {
+          "version": "0.1.0",
+          "update_link": "https://github.com/ashwin-pothen/zocitally/releases/download/v0.1.0/zocitally-0.1.0.xpi",
+          "applications": {
+            "zotero": {
+              "strict_min_version": "9.0",
+              "strict_max_version": "9.*"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
