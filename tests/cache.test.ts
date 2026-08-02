@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { cacheKey, decodeSortValue, isCacheStale, mergeFailedRefresh, numericSortValue } from "../src/cache-logic";
+import {
+  cacheKey,
+  dateSortValue,
+  decodeSortValue,
+  formatRelativeDate,
+  isCacheStale,
+  mergeFailedRefresh,
+  numericSortValue,
+} from "../src/cache-logic";
 import type { CacheRecord } from "../src/types";
 
 const record = (count: number | null, overrides: Partial<CacheRecord> = {}): CacheRecord => ({
@@ -44,5 +52,26 @@ describe("cache logic", () => {
 
   it("uses library ID plus stable item key for identity", () => {
     expect(cacheKey({ libraryID: 1, itemKey: "SAME" })).not.toBe(cacheKey({ libraryID: 2, itemKey: "SAME" }));
+  });
+
+  it("sorts extraction dates chronologically, with never-fetched records first", () => {
+    const values = [
+      record(1, { lastSuccessfulAt: 3_000 }),
+      record(null, { lastSuccessfulAt: null }),
+      record(1, { lastSuccessfulAt: 1_000 }),
+      record(1, { lastSuccessfulAt: 2_000 }),
+    ]
+      .map(dateSortValue)
+      .sort();
+    expect(values.map((value) => decodeSortValue(value)?.lastSuccessfulAt)).toEqual([null, 1000, 2000, 3000]);
+  });
+
+  it("formats the extraction date as a relative age", () => {
+    const now = 10 * 86_400_000;
+    expect(formatRelativeDate(now, now)).toBe("Today");
+    expect(formatRelativeDate(now - 86_400_000, now)).toBe("Yesterday");
+    expect(formatRelativeDate(now - 5 * 86_400_000, now)).toBe("5 days ago");
+    expect(formatRelativeDate(now - 40 * 86_400_000, now)).toBe("1 month ago");
+    expect(formatRelativeDate(now - 400 * 86_400_000, now)).toBe("1 year ago");
   });
 });

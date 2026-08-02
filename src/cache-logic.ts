@@ -49,3 +49,20 @@ export function decodeSortValue(value: string): CacheRecord | null {
     return null;
   }
 }
+
+export function dateSortValue(record: CacheRecord | undefined): string {
+  if (!record) return "";
+  const timestamp = record.lastSuccessfulAt ?? 0;
+  return `${String(timestamp).padStart(19, "0")}|${JSON.stringify(record)}`;
+}
+
+export function formatRelativeDate(timestamp: number, now = Date.now()): string {
+  const diffDays = Math.floor(Math.max(0, now - timestamp) / 86_400_000);
+  if (diffDays === 0) return "Today";
+  if (diffDays === 1) return "Yesterday";
+  if (diffDays < 30) return `${diffDays} days ago`;
+  const diffMonths = Math.floor(diffDays / 30);
+  if (diffMonths < 12) return `${diffMonths} month${diffMonths === 1 ? "" : "s"} ago`;
+  const diffYears = Math.floor(diffDays / 365);
+  return `${diffYears} year${diffYears === 1 ? "" : "s"} ago`;
+}

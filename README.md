@@ -4,6 +4,8 @@
 
 Zocitally is a lightweight Zotero plugin that retrieves citation counts from OpenAlex and displays them in a sortable **Citations** column.
 
+> **Citation counts come from [OpenAlex](https://openalex.org/), not Google Scholar.** OpenAlex indexes citations differently than Google Scholar, Scopus, or Web of Science, so the number you see here will rarely match those sources exactly. Treat it as a fast, free, roughly-accurate estimate for sorting and triage within your Zotero library, not an authoritative citation count for a CV or report.
+
 Zocitally is an independent community plugin. It is not affiliated with or endorsed by Zotero or OpenAlex.
 
 It deliberately does **not** use or scrape Google Scholar, calculate journal metrics, retrieve impact factors/quartiles/CiteScore/SJR/FWCI, create tags, write to Zotero's `Extra` field, or modify any bibliographic field.
@@ -16,12 +18,22 @@ It deliberately does **not** use or scrape Google Scholar, calculate journal met
 
 ## Installation
 
-1. Download `zocitally-0.1.0.xpi` from a release or build it locally.
-2. In Zotero, choose **Tools → Add-ons**.
-3. Open the gear menu, choose **Install Add-on From File…**, and select the XPI.
-4. Restart Zotero if requested.
+### 1. Download the XPI
 
-To enable the column, open the item-list column selector and check **Citations**. The column is hidden by default and can be resized, hidden, shown, and sorted like Zotero's built-in columns.
+Get the latest `zocitally-<version>.xpi` from the [Releases page](https://github.com/ashwin-pothen/zocitally/releases). Download the `.xpi` file attached to the latest release; do not download the source code archive.
+
+If no release is published yet, or you want a development version, [build it locally](#development) with `pnpm run build`, which produces `build/zocitally-0.1.0.xpi`.
+
+### 2. Install into Zotero
+
+1. Open Zotero and choose **Tools → Add-ons** (Zotero 8: **Tools → Plugins**).
+2. Click the gear icon in the top-right of the Add-ons window and choose **Install Add-on From File…**.
+3. Select the downloaded `.xpi` file.
+4. Restart Zotero if prompted.
+
+### 3. Enable the Citations column
+
+Right-click any column header in the item list (or use the column-selector chevron), and check **Citations** in the list. The column is hidden by default and, once enabled, can be resized, hidden, shown, and sorted like any of Zotero's built-in columns.
 
 ### Upgrading from an earlier development build
 
@@ -63,6 +75,12 @@ Hover over a value for the DOI, OpenAlex work ID, successful update time, stalen
 
 Counts sort numerically. Internally the data provider uses a fixed-width numeric sort key while the custom cell renderer shows the unpadded integer, preserving the supported Zotero item-tree column contract.
 
+### Citations Updated column
+
+A second, also-hidden-by-default column, **Citations Updated**, shows when each item's count was last successfully fetched from OpenAlex (e.g. "3 days ago"), so you can tell at a glance which items are due for a refresh. It sorts chronologically, oldest/never-fetched first. Hovering shows the exact date and time, same as the Citations column tooltip.
+
+When a cached value is older than your configured **Refresh interval** (see [Settings and cache](#settings-and-cache)), both the Citations and Citations Updated cells render in amber to flag it as stale at a glance, in addition to the "Cached value is stale" tooltip note.
+
 ## Settings and cache
 
 - **Refresh interval:** never automatically, 7, 30 (default), or 90 days.
@@ -87,7 +105,7 @@ Requests use bounded concurrency. HTTP 429 honors `Retry-After` when present and
 - Version 1 matches by DOI only; it does not guess a DOI or match by title.
 - Citation data is local-only and does not sync between Zotero installations.
 - Automatic refresh is conservative; manual update remains the primary workflow.
-- Citation coverage and update timing vary by source. OpenAlex counts may differ from Google Scholar, Scopus, Crossref, and Web of Science.
+- Citation coverage and update timing vary by source; see the note at the top of this README on OpenAlex vs. Google Scholar.
 - The automated suite cannot verify Zotero's rendered desktop UI. See the manual checklist below.
 
 ## Troubleshooting
@@ -143,6 +161,8 @@ The implementation follows Zotero's official [plugin development documentation](
 - [ ] Disable and re-enable creates no duplicate column, menus, or observer behavior
 - [ ] Numeric sort order is `0, 2, 9, 10, 100` (not lexicographic)
 - [ ] Tooltips show count, successful update time, DOI, work ID, and status
+- [ ] Citations Updated column shows a relative age and sorts oldest-first
+- [ ] Citations and Citations Updated cells turn amber once older than the refresh interval
 - [ ] Clearing cache confirms the count, clears the column, and leaves items unchanged
 - [ ] Offline refresh preserves an existing valid count and reports one concise failure summary
 - [ ] DOI change immediately invalidates the old association
