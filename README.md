@@ -22,7 +22,7 @@ It deliberately does **not** use or scrape Google Scholar, calculate journal met
 
 Get the latest `zocitally-<version>.xpi` from the [Releases page](https://github.com/ashwin-pothen/zocitally/releases). Download the `.xpi` file attached to the latest release; do not download the source code archive.
 
-If no release is published yet, or you want a development version, [build it locally](#development) with `pnpm run build`, which produces `build/zocitally-0.1.0.xpi`.
+If no release is published yet, or you want a development version, [build it locally](#development) with `pnpm run build`, which produces `build/zocitally-0.2.0.xpi`.
 
 ### 2. Install into Zotero
 
@@ -135,7 +135,7 @@ pnpm run build
 `pnpm run build` creates a production XPI at:
 
 ```text
-build/zocitally-0.1.0.xpi
+build/zocitally-0.2.0.xpi
 ```
 
 The archive contains only runtime JavaScript, manifest/default preferences, preference UI assets, and locale data. It excludes TypeScript, tests, source maps, dependencies, and secrets.

@@ -1,6 +1,6 @@
 export const PLUGIN_ID = "zocitally@ashwin-pothen";
 export const PLUGIN_NAME = "Zocitally";
-export const PLUGIN_VERSION = "0.1.0";
+export const PLUGIN_VERSION = "0.2.0";
 export const PREF_BRANCH = "extensions.zocitally.";
 export const LEGACY_PREF_BRANCHES = ["extensions.citesight.", "extensions.openalex-citations."] as const;
 export const SCHEMA_VERSION = 1;

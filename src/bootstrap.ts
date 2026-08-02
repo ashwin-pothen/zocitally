@@ -121,7 +121,7 @@ async function zoteroTransport(url: string): Promise<HttpResponse> {
     successCodes: false,
     responseType: "text",
     headers: {
-      "User-Agent": "Zocitally/0.1.0 (Zotero plugin; OpenAlex citation client)",
+      "User-Agent": "Zocitally/0.2.0 (Zotero plugin; OpenAlex citation client)",
       Accept: "application/json",
     },
   });

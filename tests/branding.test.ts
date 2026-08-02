@@ -15,11 +15,11 @@ describe("Zocitally branding", () => {
 
     expect(manifest).toMatchObject({
       name: "Zocitally",
-      version: "0.1.0",
+      version: "0.2.0",
       description: "Citation counts for Zotero, powered by OpenAlex.",
       applications: { zotero: { id: "zocitally@ashwin-pothen" } },
     });
-    expect(packageJSON).toMatchObject({ name: "zotero-zocitally", version: "0.1.0" });
+    expect(packageJSON).toMatchObject({ name: "zotero-zocitally", version: "0.2.0" });
   });
 
   it("uses the requested menu labels and a professional Claude credit", () => {
