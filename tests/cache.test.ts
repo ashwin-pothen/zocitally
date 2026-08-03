@@ -4,7 +4,6 @@ import {
   dateSortValue,
   decodeSortValue,
   formatRelativeDate,
-  isCacheStale,
   mergeFailedRefresh,
   numericSortValue,
 } from "../src/cache-logic";
@@ -36,13 +35,6 @@ describe("cache logic", () => {
     const merged = mergeFailedRefresh(record(23), { libraryID: 1, itemKey: "ABC123" }, "10.2000/new", "doi-changed", 2000);
     expect(merged.citationCount).toBeNull();
     expect(merged.lastSuccessfulAt).toBeNull();
-  });
-
-  it("calculates cache staleness and supports never automatically", () => {
-    const cached = record(1, { lastSuccessfulAt: 1_000 });
-    expect(isCacheStale(cached, 30, 1_000 + 30 * 86_400_000)).toBe(true);
-    expect(isCacheStale(cached, 30, 1_000 + 29 * 86_400_000)).toBe(false);
-    expect(isCacheStale(cached, 0, Number.MAX_SAFE_INTEGER)).toBe(false);
   });
 
   it("sorts citation counts numerically rather than lexicographically", () => {

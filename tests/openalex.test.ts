@@ -57,6 +57,15 @@ describe("OpenAlex response handling", () => {
     expect(sleep).toHaveBeenCalledTimes(2);
   });
 
+  it("stops retrying and returns immediately once cancelled, without sleeping", async () => {
+    const transport = vi.fn(async () => response(503));
+    const sleep = vi.fn(async () => undefined);
+    const client = new OpenAlexClient({ transport, retry: { sleep, maxRetries: 5, baseDelayMs: 1 } });
+    await expect(client.getCitationCount("10.1000/example", () => true)).rejects.toMatchObject({ code: "server-error" });
+    expect(transport).toHaveBeenCalledTimes(1);
+    expect(sleep).not.toHaveBeenCalled();
+  });
+
   it("uses selected fields and keeps an API key out of path components", async () => {
     const transport = vi.fn(async (_url: string) => response(404));
     const client = new OpenAlexClient({ apiKey: "secret-key", transport });

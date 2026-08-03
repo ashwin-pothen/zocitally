@@ -22,7 +22,7 @@ It deliberately does **not** use or scrape Google Scholar, calculate journal met
 
 Get the latest `zocitally-<version>.xpi` from the [Releases page](https://github.com/ashwin-pothen/zocitally/releases). Download the `.xpi` file attached to the latest release; do not download the source code archive.
 
-If no release is published yet, or you want a development version, [build it locally](#development) with `pnpm run build`, which produces `build/zocitally-0.2.0.xpi`.
+If no release is published yet, or you want a development version, [build it locally](#development) with `pnpm run build`, which produces `build/zocitally-0.3.0.xpi`.
 
 ### 2. Install into Zotero
 
@@ -65,17 +65,14 @@ Attachments selected in the item list are resolved to their parent bibliographic
 | `∅` | The DOI was not found in OpenAlex |
 | `!` | The latest attempt failed and no prior valid count is available |
 
-Hover over a value for the DOI, OpenAlex work ID, successful update time, staleness, or concise status/error. If a refresh fails for the same DOI, a previously valid count remains visible and the tooltip records the failed refresh. Counts sort numerically, not lexicographically.
+Hover over a value for the DOI, OpenAlex work ID, successful update time, or concise status/error. If a refresh fails for the same DOI, a previously valid count remains visible and the tooltip records the failed refresh. Counts sort numerically, not lexicographically.
 
 ### Citations Updated column
 
 A second, also-hidden-by-default column, **Citations Updated**, shows when each item's count was last successfully fetched from OpenAlex (e.g. "3 days ago"), so you can tell at a glance which items are due for a refresh. It sorts chronologically, oldest/never-fetched first. Hovering shows the exact date and time, same as the Citations column tooltip.
 
-When a cached value is older than your configured **Refresh interval** (see [Settings and cache](#settings-and-cache)), both the Citations and Citations Updated cells render in amber to flag it as stale at a glance, in addition to the "Cached value is stale" tooltip note.
-
 ## Settings and cache
 
-- **Refresh interval:** never automatically, 7, 30 (default), or 90 days.
 - **Maximum concurrent requests:** 1–5, default 3.
 - **Automatically fetch visible uncached items:** off by default. When enabled, the implementation is intentionally conservative: one request at a time, at most 10 queued items, and a 20-item session budget.
 - **Clear Cached Citation Data:** confirms the exact local record count, removes only plugin data, and refreshes the column.
@@ -126,12 +123,14 @@ pnpm run build
 `pnpm run build` creates a production XPI at:
 
 ```text
-build/zocitally-0.2.0.xpi
+build/zocitally-0.3.0.xpi
 ```
 
 The archive contains only runtime JavaScript, manifest/default preferences, preference UI assets, and locale data. It excludes TypeScript, tests, source maps, dependencies, and secrets.
 
 For iterative development, run `pnpm run build:dev`, then create a text file named `zocitally@ashwin-pothen` in the disposable Zotero development profile's `extensions` directory. Put the absolute path to `build/runtime` in that file. Start Zotero with a separate profile and data directory; never point development builds at a normal library. Rebuild and disable/re-enable the add-on to reload. If disabling and re-enabling produces duplicate columns or menu entries, check Zotero's debug output; the plugin explicitly unregisters each component on shutdown.
+
+See [DEVELOPMENT.md](DEVELOPMENT.md) for known issues, a testing gotcha around stale reloads, and notes on a crash-on-quit bug encountered during development.
 
 The repository and package name is `zotero-zocitally`.
 

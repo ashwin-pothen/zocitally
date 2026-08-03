@@ -27,12 +27,12 @@ export class OpenAlexClient {
     this.retry = { ...DEFAULT_RETRY_OPTIONS, ...options.retry };
   }
 
-  async getCitationCount(normalizedDOI: string): Promise<OpenAlexResult> {
+  async getCitationCount(normalizedDOI: string, isCancelled: () => boolean = () => false): Promise<OpenAlexResult> {
     const identifier = `doi:${normalizedDOI}`;
     const url = this.url(`/works/${encodeURIComponent(identifier)}`, {
       select: "id,doi,cited_by_count",
     });
-    const response = await this.requestWithRetry(url);
+    const response = await this.requestWithRetry(url, isCancelled);
 
     if (response.status === 404) return { kind: "not-found" };
     this.throwForStatus(response.status);
@@ -53,7 +53,7 @@ export class OpenAlexClient {
         "missing-api-key",
       );
     }
-    const response = await this.requestWithRetry(this.url("/rate-limit"));
+    const response = await this.requestWithRetry(this.url("/rate-limit"), () => false);
     this.throwForStatus(response.status);
     try {
       const value = JSON.parse(response.body) as { rate_limit?: unknown };
@@ -63,14 +63,14 @@ export class OpenAlexClient {
     }
   }
 
-  private async requestWithRetry(url: string): Promise<HttpResponse> {
+  private async requestWithRetry(url: string, isCancelled: () => boolean): Promise<HttpResponse> {
     let attempt = 0;
     while (true) {
       let response: HttpResponse;
       try {
         response = await this.options.transport(url);
       } catch (error) {
-        if (attempt >= this.retry.maxRetries) {
+        if (attempt >= this.retry.maxRetries || isCancelled()) {
           throw new OpenAlexError(
             `Network request failed: ${error instanceof Error ? error.message : "unknown network error"}`,
             "network-error",
@@ -82,7 +82,7 @@ export class OpenAlexClient {
       }
 
       const transient = response.status === 429 || response.status >= 500;
-      if (!transient || attempt >= this.retry.maxRetries) return response;
+      if (!transient || attempt >= this.retry.maxRetries || isCancelled()) return response;
       const retryAfter = parseRetryAfter(response.headers["retry-after"]);
       await this.retry.sleep(retryDelay(attempt, retryAfter, this.retry));
       attempt += 1;

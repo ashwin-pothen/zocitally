@@ -2,7 +2,7 @@ import { LEGACY_PREF_BRANCHES, PREF_BRANCH } from "./types";
 
 const PREFERENCE_MIGRATION_VERSION = 1;
 const MIGRATION_VERSION_KEY = `${PREF_BRANCH}migrationVersion`;
-const MIGRATED_SETTING_NAMES = ["apiKey", "autoFetch", "refreshIntervalDays", "maxConcurrency"] as const;
+const MIGRATED_SETTING_NAMES = ["apiKey", "autoFetch", "maxConcurrency"] as const;
 
 export interface PreferenceMigrationStore {
   hasUserValue(name: string): boolean;
@@ -46,11 +46,6 @@ export function getAPIKey(): string {
 
 export function getAutoFetch(): boolean {
   return Zotero.Prefs.get(`${PREF_BRANCH}autoFetch`) === true;
-}
-
-export function getRefreshIntervalDays(): number {
-  const value = Number(Zotero.Prefs.get(`${PREF_BRANCH}refreshIntervalDays`));
-  return [0, 7, 30, 90].includes(value) ? value : 30;
 }
 
 export function getMaxConcurrency(): number {

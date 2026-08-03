@@ -60,6 +60,7 @@ export async function startup(data: BootstrapData, _reason: number): Promise<voi
     scripts: ["preferences.js"],
     stylesheets: ["prefs.css"],
     label: "Zocitally",
+    image: "icons/icon48.png",
   });
 
   runtime = { storage, updater, column, menus, autoFetcher, observer, preferencePaneID };
@@ -67,21 +68,31 @@ export async function startup(data: BootstrapData, _reason: number): Promise<voi
   Zotero.debug("[Zocitally] Started");
 }
 
-export async function shutdown(_data: BootstrapData, reason: number): Promise<void> {
-  if (reason === APP_SHUTDOWN || !runtime) return;
+export async function shutdown(_data: BootstrapData, _reason: number): Promise<void> {
+  if (!runtime) return;
   const state = runtime;
   runtime = null;
-  state.autoFetcher.stop();
-  state.updater.shutdown();
-  state.observer.unregister();
-  state.menus.unregister();
-  state.column.unregister();
-  if (state.preferencePaneID && Zotero.PreferencePanes.unregister) {
-    Zotero.PreferencePanes.unregister(state.preferencePaneID);
-  }
-  await state.storage.close();
+  await guard(() => state.autoFetcher.stop());
+  await guard(() => state.updater.shutdown());
+  await guard(() => state.observer.unregister());
+  await guard(() => state.menus.unregister());
+  await guard(() => state.column.unregister());
+  await guard(() => {
+    if (state.preferencePaneID && Zotero.PreferencePanes.unregister) {
+      Zotero.PreferencePanes.unregister(state.preferencePaneID);
+    }
+  });
+  await guard(() => state.storage.close());
   delete Zotero.Zocitally;
   Zotero.debug("[Zocitally] Shut down");
+}
+
+async function guard(step: () => unknown): Promise<void> {
+  try {
+    await step();
+  } catch (error) {
+    Zotero.logError(error);
+  }
 }
 
 export async function uninstall(_data: BootstrapData, _reason: number): Promise<void> {
@@ -121,7 +132,7 @@ async function zoteroTransport(url: string): Promise<HttpResponse> {
     successCodes: false,
     responseType: "text",
     headers: {
-      "User-Agent": "Zocitally/0.2.0 (Zotero plugin; OpenAlex citation client)",
+      "User-Agent": "Zocitally/0.3.0 (Zotero plugin; OpenAlex citation client)",
       Accept: "application/json",
     },
   });

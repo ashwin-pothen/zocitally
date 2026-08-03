@@ -91,6 +91,7 @@ declare global {
         scripts?: string[];
         stylesheets?: string[];
         label?: string;
+        image?: string;
       }): Promise<string>;
       unregister?(paneID: string): void;
     };

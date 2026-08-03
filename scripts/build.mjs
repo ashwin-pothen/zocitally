@@ -44,6 +44,10 @@ for (const file of ["manifest.json", "prefs.xhtml", "prefs.css"]) {
 }
 await fs.copyFile(path.join(addon, "prefs.js.defaults"), path.join(runtime, "prefs.js"));
 await fs.cp(path.join(addon, "locale"), path.join(runtime, "locale"), { recursive: true });
+await fs.cp(path.join(addon, "icons"), path.join(runtime, "icons"), {
+  recursive: true,
+  filter: (source) => !source.endsWith(".svg"),
+});
 
 await fs.mkdir(path.dirname(output), { recursive: true });
 await fs.rm(output, { force: true });

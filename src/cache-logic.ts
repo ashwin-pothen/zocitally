@@ -4,11 +4,6 @@ export function cacheKey(identity: CacheIdentity): string {
   return `${identity.libraryID}:${identity.itemKey}`;
 }
 
-export function isCacheStale(record: CacheRecord, intervalDays: number, now = Date.now()): boolean {
-  if (intervalDays === 0 || record.lastSuccessfulAt === null) return false;
-  return now - record.lastSuccessfulAt >= intervalDays * 86_400_000;
-}
-
 export function mergeFailedRefresh(
   previous: CacheRecord | undefined,
   identity: CacheIdentity,

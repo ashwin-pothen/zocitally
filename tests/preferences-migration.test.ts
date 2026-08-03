@@ -27,14 +27,12 @@ describe("Zocitally preference migration", () => {
     const { store, values } = preferenceStore({
       "extensions.citesight.apiKey": "legacy-key",
       "extensions.citesight.autoFetch": true,
-      "extensions.citesight.refreshIntervalDays": 90,
       "extensions.citesight.maxConcurrency": 5,
     });
 
-    expect(migratePreferenceValues(store)).toBe(4);
+    expect(migratePreferenceValues(store)).toBe(3);
     expect(values.get("extensions.zocitally.apiKey")).toBe("legacy-key");
     expect(values.get("extensions.zocitally.autoFetch")).toBe(true);
-    expect(values.get("extensions.zocitally.refreshIntervalDays")).toBe(90);
     expect(values.get("extensions.zocitally.maxConcurrency")).toBe(5);
     expect(values.get("extensions.zocitally.migrationVersion")).toBe(1);
     expect(migratePreferenceValues(store)).toBe(0);

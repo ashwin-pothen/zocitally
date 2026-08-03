@@ -1,12 +1,11 @@
-import { dateSortValue, decodeSortValue, formatRelativeDate, isCacheStale, numericSortValue } from "./cache-logic";
+import { dateSortValue, decodeSortValue, formatRelativeDate, numericSortValue } from "./cache-logic";
 import { isEligibleItem } from "./items";
-import { getAutoFetch, getRefreshIntervalDays } from "./preferences-values";
+import { getAutoFetch } from "./preferences-values";
 import { CitationStorage } from "./storage";
 import { PLUGIN_ID, type EligibleItem } from "./types";
 
 const DATA_KEY = "zocitallyCitationCount";
 const DATE_DATA_KEY = "zocitallyLastUpdated";
-const STALE_COLOR = "#b45309";
 
 export class CitationColumn {
   private registeredDataKey: string | null = null;
@@ -56,7 +55,6 @@ export class CitationColumn {
           } else {
             cell.textContent = "!";
           }
-          if (isCacheStale(record, getRefreshIntervalDays())) cell.style.color = STALE_COLOR;
           cell.title = tooltip(record);
           return cell;
         },
@@ -92,7 +90,6 @@ export class CitationColumn {
             return cell;
           }
           cell.textContent = formatRelativeDate(record.lastSuccessfulAt);
-          if (isCacheStale(record, getRefreshIntervalDays())) cell.style.color = STALE_COLOR;
           cell.title = tooltip(record);
           return cell;
         },
@@ -115,7 +112,6 @@ export class CitationColumn {
 }
 
 function tooltip(record: import("./types").CacheRecord): string {
-  const stale = isCacheStale(record, getRefreshIntervalDays()) ? "\nCached value is stale" : "";
   if (record.citationCount !== null) {
     const updated = record.lastSuccessfulAt === null ? "Unknown" : new Date(record.lastSuccessfulAt).toLocaleString();
     return [
@@ -124,7 +120,7 @@ function tooltip(record: import("./types").CacheRecord): string {
       `DOI: ${record.normalizedDOI ?? "Unknown"}`,
       ...(record.openAlexWorkID ? [`OpenAlex work: ${record.openAlexWorkID}`] : []),
       ...(record.status === "error" ? [`Last refresh error: ${record.errorCode ?? "unknown error"}`] : []),
-    ].join("\n") + stale;
+    ].join("\n");
   }
   if (record.status === "missing-doi") return "No DOI available";
   if (record.status === "not-found") return `DOI not found in OpenAlex\nDOI: ${record.normalizedDOI ?? "Unknown"}`;
